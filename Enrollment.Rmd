@@ -7,12 +7,19 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(janitor)
 ```
 
 ```{r}
-library(readxl)
-library(tidyverse)
-enrollment <- read_excel("class_enrollment_summary_by_term_2-10-2021.xlsx")
-enrollment
+enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xlsx", skip = 3)
+
+enrollment %>%
+  group_by(`Instructor Full Name`) %>%
+  summarize(total_student = sum(Total)) %>%
+  arrange(desc(total_student)) %>%
+  ##  clean_names() %>%
+  slice(1:5)
 ```
 
