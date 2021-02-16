@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library(readxl)
 library(tidyverse)
 library(janitor)
@@ -16,10 +16,19 @@ library(janitor)
 enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xlsx", skip = 3)
 
 enrollment %>%
-  group_by(`Instructor Full Name`) %>%
-  summarize(total_student = sum(Total)) %>%
-  arrange(desc(total_student)) %>%
-  ##  clean_names() %>%
-  slice(1:5)
+  clean_names() %>%
+  drop_na(course_name) %>%
+  select(course_name, total) %>%
+  group_by(course_name) %>%
+  summarise(sum_total = sum(total)) %>%
+  arrange(desc(sum_total)) %>%
+  slice(1:10) %>%
+  ggplot(mapping = aes(fct_reorder(course_name, sum_total), sum_total)) +
+  geom_col()
+```
+
+```{r}
+enrollment %>%
+  filter(`Course Name` == "Expository Writing 20")
 ```
 
