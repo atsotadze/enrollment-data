@@ -14,21 +14,26 @@ library(janitor)
 
 ```{r}
 enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xlsx", skip = 3)
-
-enrollment %>%
-  clean_names() %>%
-  drop_na(course_name) %>%
-  select(course_name, total) %>%
-  group_by(course_name) %>%
-  summarise(sum_total = sum(total)) %>%
-  arrange(desc(sum_total)) %>%
-  slice(1:10) %>%
-  ggplot(mapping = aes(fct_reorder(course_name, sum_total), sum_total)) +
-  geom_col()
 ```
 
 ```{r}
 enrollment %>%
-  filter(`Course Name` == "Expository Writing 20")
+  clean_names() %>%
+  drop_na(course_name) %>%
+  select(course_id, course_name, total) %>%
+  group_by(course_id, course_name) %>%
+  summarise(sum_total = sum(total), .groups = "drop") %>%
+  arrange(desc(sum_total)) %>%
+  slice(1:10) %>%
+  ggplot(mapping = aes(fct_reorder(course_name, 
+                          sum_total), sum_total)) +
+  geom_col() + 
+  coord_flip() +
+  labs(title = "Top 10 Most Popular Classes At Harvard",
+       x = "Course Name",
+       y = "Total Enrollment", 
+       caption = "Source: Harvard Registrar")
 ```
+
+
 
