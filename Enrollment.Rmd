@@ -1,7 +1,5 @@
 ---
 title: "Enrollment-Data"
-author: "Alex Tsotadze"
-date: "2/11/2021"
 output: html_document
 ---
 
@@ -15,20 +13,13 @@ library(ggthemes)
 ```
 
 ```{r}
-enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xlsx", skip = 3)
+enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xlsx", skip = 3) %>%
+  clean_names() %>%
+  drop_na(course_name) 
 ```
 
 ```{r}
-enrollment %>%
-  
-  # we started by cleaning the names because some of the names had spaces 
-  
-  clean_names() %>%
-  
-  # we got rid of the NA values 
-  
-  drop_na(course_name) %>%
-  
+x <- enrollment %>%
   # we selected the following courses because Expos was not being included in the count by the Crimson - they had the same course ID but not the same name 
   
   select(course_id, course_name, total) %>%
@@ -42,8 +33,14 @@ enrollment %>%
   # needed to use fct_reorder in order to graph this correctly, when just using normal ggplot the classes were not arranged in descending order 
   
   arrange(desc(sum_total)) %>%
-  slice(1:10) %>%
-  ggplot(mapping = aes(fct_reorder(course_name, 
+  slice(1:10)
+  
+  
+```
+
+```{r}
+enrollment_p <- x %>%
+ggplot(mapping = aes(fct_reorder(course_name, 
                           sum_total), sum_total)) +
   
   # coord_flip to flip the graph on its side (was not working well when it was vertical)
@@ -54,12 +51,13 @@ enrollment %>%
        subtitle = "All freshmen must take Expository Writing",
        x = "Course Name",
        y = "Total Enrollment", 
-       caption = "Source: Harvard Registrar") +
-  
-  # changed the theme for a better aesthetic - getting rid of the axis titles
-  
-  theme_fivethirtyeight()
-  
+       caption = "Source: Harvard Registrar") 
+
+enrollment_p
+```
+```{r}
+ggsave(filename = "enrollment.jpg", 
+       plot = enrollment_p)
 ```
 
 
