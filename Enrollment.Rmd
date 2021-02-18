@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = FALSE)
 library(readxl)
 library(tidyverse)
 library(janitor)
+library(fivethirtyeight)
+library(ggthemes)
 ```
 
 ```{r}
@@ -18,21 +20,46 @@ enrollment <- read_excel("raw_data/class_enrollment_summary_by_term_2-10-2021.xl
 
 ```{r}
 enrollment %>%
+  
+  # we started by cleaning the names because some of the names had spaces 
+  
   clean_names() %>%
+  
+  # we got rid of the NA values 
+  
   drop_na(course_name) %>%
+  
+  # we selected the following courses because Expos was not being included in the count by the Crimson - they had the same course ID but not the same name 
+  
   select(course_id, course_name, total) %>%
+  
+  # grouped by course_id and course_name 
+  # we needed to have .groups because we were slicing and arranging within groups - we were only getting the top 10 from each group giving us all of the classes again
+  
   group_by(course_id, course_name) %>%
   summarise(sum_total = sum(total), .groups = "drop") %>%
+  
+  # needed to use fct_reorder in order to graph this correctly, when just using normal ggplot the classes were not arranged in descending order 
+  
   arrange(desc(sum_total)) %>%
   slice(1:10) %>%
   ggplot(mapping = aes(fct_reorder(course_name, 
                           sum_total), sum_total)) +
+  
+  # coord_flip to flip the graph on its side (was not working well when it was vertical)
+  
   geom_col() + 
   coord_flip() +
   labs(title = "Top 10 Most Popular Classes At Harvard",
+       subtitle = "All freshmen must take Expository Writing",
        x = "Course Name",
        y = "Total Enrollment", 
-       caption = "Source: Harvard Registrar")
+       caption = "Source: Harvard Registrar") +
+  
+  # changed the theme for a better aesthetic - getting rid of the axis titles
+  
+  theme_fivethirtyeight()
+  
 ```
 
 
